@@ -60,7 +60,7 @@ function startPractice(chapterId) {
   const qs = questions.filter(q => q.chapter === chapterId);
   const unseen = shuffle(qs.filter(q => !save.correct[q.id]));
   const seen = shuffle(qs.filter(q => save.correct[q.id]));
-  set = unseen.concat(seen).slice(0, 10);
+  set = unseen.concat(seen);
   index = 0; score = 0;
   showQuestion();
   show("practice");
@@ -119,7 +119,11 @@ document.getElementById("nextBtn").onclick = () => {
   document.getElementById("explain").classList.add("hidden");
   document.getElementById("nextBtn").classList.add("hidden");
   document.getElementById("meaningBtn").classList.add("hidden");
-  document.getElementById("meaningText").classList.add("hidden");
+document.getElementById("meaningText").classList.add("hidden");
+  const next = document.getElementById("nextBtn");
+  next.textContent = "Back to chapters";
+  next.classList.remove("hidden");
+  next.onclick = () => { location.reload(); };
 };
 
 document.getElementById("meaningBtn").onclick = () => {
