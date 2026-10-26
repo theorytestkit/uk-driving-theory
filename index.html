@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UK Driving Theory</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="welcome" class="screen blue">
+    <h1>UK Driving Theory in your language</h1>
+    <div class="grid">
+      <div class="box"><b>50</b><br>Questions</div>
+      <div class="box"><b>57</b><br>Minutes</div>
+      <div class="box"><b>43</b><br>Correct = Pass</div>
+      <div class="box"><b>44/75</b><br>Hazard Perception</div>
+    </div>
+    <button id="startBtn" class="big">Choose your language</button>
+  </div>
+
+  <div id="langs" class="screen hidden">
+    <h2>Choose your language</h2>
+    <div id="langList"></div>
+  </div>
+
+  <div id="home" class="screen hidden">
+    <h2>UK Driving Theory</h2>
+    <div class="card">
+      <b>Your progress</b>
+      <p id="progressText"></p>
+      <div class="bar"><div id="progressFill"></div></div>
+    </div>
+    <div id="chapterList"></div>
+    <p class="note">Questions are self-written, not official DVSA questions.</p>
+  </div>
+
+  <div id="practice" class="screen hidden">
+    <button id="backBtn" class="link">← Back</button>
+    <p id="count"></p>
+    <h3 id="questionText"></h3>
+    <button id="meaningBtn" class="link">Meaning in Hindi</button>
+    <p id="meaningText" class="hidden"></p>
+    <div id="answers"></div>
+    <div id="explain" class="card hidden"></div>
+    <button id="nextBtn" class="big hidden">Next question</button>
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
