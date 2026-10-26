@@ -29,7 +29,7 @@ function showLanguages() {
 
 function showHome() {
   const total = questions.length;
-  const done = Object.keys(save.correct).length;
+  const done = questions.filter(q => save.correct[q.id]).length;
   document.getElementById("progressText").textContent = done + " / " + total + " correct";
   document.getElementById("progressFill").style.width = (done / total * 100) + "%";
   const list = document.getElementById("chapterList");
@@ -38,20 +38,28 @@ function showHome() {
     const qs = questions.filter(q => q.chapter === c.id);
     const d = qs.filter(q => save.correct[q.id]).length;
     const b = document.createElement("button");
-    b.className = "item";
-    b.innerHTML = "<b>" + c.id + ". " + c.name + "</b><br>" + c.hi + " - " + d + " / " + qs.length;
-    b.onclick = () => startPractice(c.id);
+    b.className = "item" + (qs.length ? "" : " soon");
+    b.innerHTML = "<b>" + c.id + ". " + c.name + "</b><br>" + c.hi + " - " + (qs.length ? d + " / " + qs.length : "Coming soon");
+    if (qs.length) b.onclick = () => startPractice(c.id);
     list.appendChild(b);
   });
   show("home");
 }
 
-let set = [], index = 0, score = 0;
+let set = [], index = 0, score = 0, correctPos = 0;
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 function startPractice(chapterId) {
   const qs = questions.filter(q => q.chapter === chapterId);
-  const unseen = qs.filter(q => !save.correct[q.id]);
-  const seen = qs.filter(q => save.correct[q.id]);
+  const unseen = shuffle(qs.filter(q => !save.correct[q.id]));
+  const seen = shuffle(qs.filter(q => save.correct[q.id]));
   set = unseen.concat(seen).slice(0, 10);
   index = 0; score = 0;
   showQuestion();
@@ -69,11 +77,13 @@ function showQuestion() {
   document.getElementById("nextBtn").classList.add("hidden");
   const box = document.getElementById("answers");
   box.innerHTML = "";
-  q.options.forEach((text, i) => {
+  const order = shuffle(q.options.map((_, i) => i));
+  correctPos = order.indexOf(q.answer);
+  order.forEach((optIndex, pos) => {
     const b = document.createElement("button");
     b.className = "answer";
-    b.textContent = "ABCD"[i] + ". " + text;
-    b.onclick = () => choose(i);
+    b.textContent = "ABCD"[pos] + ". " + q.options[optIndex];
+    b.onclick = () => choose(pos);
     box.appendChild(b);
   });
 }
@@ -82,11 +92,11 @@ function choose(i) {
   const q = set[index];
   const buttons = document.querySelectorAll(".answer");
   buttons.forEach(b => b.disabled = true);
-  buttons[q.answer].classList.add("right");
-  if (i === q.answer) {
+  buttons[correctPos].classList.add("right");
+  if (i === correctPos) {
     score++;
     save.correct[q.id] = true;
-    buttons[q.answer].textContent += "  ✓";
+    buttons[correctPos].textContent += "  ✓";
   } else {
     buttons[i].classList.add("wrong");
     buttons[i].textContent += "  ✗";
