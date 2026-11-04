@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin – UK Theory Test Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+:root{--navy:#142B4A;--teal:#1B9A91;--tealdk:#14817A;--tealbg:#E6F5F3;--bg:#F4F7FA;--card:#fff;--line:#dde4ee;--muted:#5d6b7e;--text:#17263a;--red:#E5484D;--green:#1c8a39;--amber:#B7791F}
+*{box-sizing:border-box}
+body{margin:0;font-family:Poppins,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+header{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header b{flex:1;font-size:1rem}
+header button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:.8rem;cursor:pointer}
+main{max-width:980px;margin:0 auto;padding:14px 16px 40px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border-radius:14px;padding:12px 14px;box-shadow:0 2px 10px rgba(20,43,74,.07)}
+.stat small{display:block;color:var(--muted);font-size:.78rem}
+.stat b{display:block;font-size:1.5rem;color:var(--navy);margin-top:2px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px}
+.tabs button{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font:inherit;font-size:.88rem;white-space:nowrap;cursor:pointer;color:var(--text)}
+.tabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.tabs .n{background:var(--red);color:#fff;border-radius:999px;padding:0 7px;font-size:.72rem;margin-left:5px}
+.tools{display:flex;gap:8px;margin-bottom:10px}
+.tools input{flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit}
+.btn{border:0;background:var(--teal);color:#fff;border-radius:10px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:var(--card);color:var(--tealdk);border:1.5px solid var(--teal)}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:0 1px 6px rgba(20,43,74,.06)}
+.row .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.row .top b{color:var(--navy);word-break:break-all}
+.row .meta{color:var(--muted);font-size:.82rem;margin-top:3px;line-height:1.5;word-break:break-word}
+.row .msg{margin-top:8px;white-space:pre-wrap;line-height:1.5}
+.tag{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.75rem;font-weight:600;white-space:nowrap}
+.tag.paid{background:#E3F6E8;color:var(--green)}.tag.free{background:#eef1f5;color:var(--muted)}
+.tag.new{background:#FDECEC;color:var(--red)}.tag.done{background:#E3F6E8;color:var(--green)}
+.row a{color:var(--tealdk)}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.center{max-width:380px;margin:60px auto;background:var(--card);border-radius:18px;padding:24px;text-align:center;box-shadow:0 4px 20px rgba(20,43,74,.1)}
+.center h2{color:var(--navy);margin:0 0 6px}.center p{color:var(--muted)}
+.err{color:var(--red)}
+.cform{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cform input{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;flex:1;min-width:120px}
+</style>
+</head>
+<body>
+<header><b>UK Theory Test Kit · Admin</b><button id="reload" style="display:none">↻ Refresh</button><button id="out" style="display:none">Log out</button></header>
+<main id="app"><div class="center"><p>Loading…</p></div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  var sb = window.supabase.createClient("https://fknovtlwznswxngvtwmv.supabase.co", "sb_publishable_EXWchBMmqlnzoJIPVFydCQ_PWZF31cG",
+    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  var app = document.getElementById("app"), D = null, tab = "buyers", q = "";
+
+  function h(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function dt(s) { return s ? new Date(s).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–"; }
+  function money(m, c) { return (c === "GBP" ? "£" : c === "INR" ? "₹" : (c || "") + " ") + (Number(m || 0) / 100).toFixed(2); }
+
+  function signInBox(msg) {
+    app.innerHTML = '<div class="center"><h2>Admin</h2><p>' + (msg || "Sign in with your admin Google account.") + '</p><button class="btn" id="g">Sign in with Google</button></div>';
+    document.getElementById("g").onclick = function () { sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + "/admin.html" } }); };
+  }
+
+  async function load() {
+    app.innerHTML = '<div class="center"><p>Loading…</p></div>';
+    var r = await sb.functions.invoke("admin-data", { body: {} });
+    if (r.error) {
+      var m = "Could not load data.";
+      try { var j = await r.error.context.json(); if (j.error) m = j.error; } catch (e) {}
+      app.innerHTML = '<div class="center"><h2>Admin</h2><p class="err">' + h(m) + '</p><button class="btn ghost" id="o2">Log out</button></div>';
+      document.getElementById("o2").onclick = logout;
+      return;
+    }
+    D = r.data;
+    var paidMap = {};
+    D.purchases.forEach(function (p) { if (p.paid) paidMap[p.user_id] = p; });
+    D.users.forEach(function (u) { u.paid = paidMap[u.id] || null; });
+    D.byId = {}; D.users.forEach(function (u) { D.byId[u.id] = u; });
+    document.getElementById("reload").style.display = "inline-block";
+    document.getElementById("out").style.display = "inline-block";
+    render();
+  }
+
+  function stats() {
+    var paid = D.purchases.filter(function (p) { return p.paid; });
+    var rev = {}; paid.forEach(function (p) { rev[p.currency] = (rev[p.currency] || 0) + (p.amount || 0); });
+    var revTxt = Object.keys(rev).map(function (c) { return money(rev[c], c); }).join(" + ") || "£0.00";
+    var week = Date.now() - 7 * 864e5;
+    var newWeek = D.users.filter(function (u) { return new Date(u.created) > week; }).length;
+    var open = D.enquiries.filter(function (e) { return e.status !== "done"; }).length;
+    return '<div class="stats">' +
+      '<div class="stat"><small>Buyers</small><b>' + paid.length + '</b></div>' +
+      '<div class="stat"><small>Revenue</small><b style="font-size:1.15rem">' + revTxt + '</b></div>' +
+      '<div class="stat"><small>Total users</small><b>' + D.users.length + '</b></div>' +
+      '<div class="stat"><small>New users (7 days)</small><b>' + newWeek + '</b></div>' +
+      '<div class="stat"><small>Open enquiries</small><b style="color:' + (open ? "var(--red)" : "var(--navy)") + '">' + open + '</b></div></div>';
+  }
+
+  function match(s) { return !q || String(s).toLowerCase().indexOf(q) >= 0; }
+
+  function buyers() {
+    var rows = D.purchases.filter(function (p) { return p.paid; }).sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+    rows = rows.filter(function (p) { var u = D.byId[p.user_id] || {}; return match([u.email, u.name, u.phone, p.coupon, p.razorpay_payment_id].join(" ")); });
+    if (!rows.length) return '<div class="empty">No buyers yet.</div>';
+    return rows.map(function (p) {
+      var u = D.byId[p.user_id] || {};
+      return '<div class="row"><div class="top"><b>' + h(u.name || u.email || p.user_id) + '</b><span class="tag paid">' + money(p.amount, p.currency) + '</span></div>' +
+        '<div class="meta">' + h(u.email || "") + (u.phone ? " · " + h(u.phone) : "") + '<br>' + dt(p.created_at) +
+        (p.coupon ? ' · coupon <b>' + h(p.coupon) + '</b>' : '') + '<br>Payment: ' + h(p.razorpay_payment_id || "–") + '</div></div>';
+    }).join("");
+  }
+
+  function users() {
+    var rows = D.users.slice().sort(function (a, b) { return new Date(b.created) - new Date(a.created); })
+      .filter(function (u) { return match([u.email, u.name, u.phone].join(" ")); });
+    if (!rows.length) return '<div class="empty">No users.</div>';
+    return rows.map(function (u) {
+      var pr = u.progress;
+      return '<div class="row"><div class="top"><b>' + h(u.name || u.email) + '</b><span class="tag ' + (u.paid ? "paid" : "free") + '">' + (u.paid ? "Paid" : "Not paid") + '</span></div>' +
+        '<div class="meta">' + h(u.email) + (u.phone ? " · " + h(u.phone) : "") + '<br>Joined ' + dt(u.created) + ' · Last login ' + dt(u.last) +
+        (pr ? '<br>Answered ' + pr.answered + ' questions · ' + pr.mocks + ' mock tests' + (pr.lang ? ' · ' + h(pr.lang) : '') : '') + '</div></div>';
+    }).join("");
+  }
+
+  function enquiries() {
+    var rows = D.enquiries.filter(function (e) { return match([e.name, e.email, e.phone, e.message].join(" ")); });
+    if (!rows.length) return '<div class="empty">No enquiries yet.</div>';
+    return rows.map(function (e) {
+      var done = e.status === "done";
+      return '<div class="row"><div class="top"><b>' + h(e.name || e.email) + '</b><span class="tag ' + (done ? "done" : "new") + '">' + (done ? "Done" : "New") + '</span></div>' +
+        '<div class="meta"><a href="mailto:' + h(e.email) + '?subject=' + encodeURIComponent("Re: your message to UK Theory Test Kit") + '">' + h(e.email) + '</a>' +
+        (e.phone ? ' · <a href="tel:' + h(e.phone) + '">' + h(e.phone) + '</a>' : '') + ' · ' + dt(e.created_at) +
+        (e.user_id && D.byId[e.user_id] ? ' · ' + (D.byId[e.user_id].paid ? "paid customer" : "registered user") : '') + '</div>' +
+        '<div class="msg">' + h(e.message) + '</div>' +
+        '<div style="margin-top:10px"><button class="btn ' + (done ? "ghost" : "") + '" data-eq="' + e.id + '" data-st="' + (done ? "new" : "done") + '">' + (done ? "Mark as new" : "Mark as done") + '</button></div></div>';
+    }).join("");
+  }
+
+  function coupons() {
+    var f = '<div class="cform"><input id="cc" placeholder="Code e.g. FRIEND10"><input id="cp" type="number" step="0.01" placeholder="Price £ e.g. 10"><button class="btn" id="cadd">Add / update</button></div>';
+    if (!D.coupons.length) return f + '<div class="empty">No coupons.</div>';
+    return f + D.coupons.map(function (c) {
+      return '<div class="row"><div class="top"><b>' + h(c.code) + '</b><span class="tag ' + (c.active ? "paid" : "free") + '">' + (c.active ? "Active" : "Off") + '</span></div>' +
+        '<div class="meta">Price with coupon: <b>£' + (c.amount_minor / 100).toFixed(2) + '</b> · used ' + (c.uses || 0) + ' times</div>' +
+        '<div style="margin-top:10px"><button class="btn ghost" data-cp="' + h(c.code) + '" data-am="' + c.amount_minor + '" data-ac="' + (c.active ? "0" : "1") + '">' + (c.active ? "Switch off" : "Switch on") + '</button></div></div>';
+    }).join("");
+  }
+
+  function csv() {
+    var rows = [["Name", "Email", "Phone", "Joined", "Last login", "Paid", "Amount", "Coupon", "Paid on"]];
+    D.users.forEach(function (u) {
+      rows.push([u.name, u.email, u.phone, u.created, u.last, u.paid ? "yes" : "no", u.paid ? (u.paid.amount / 100).toFixed(2) + " " + u.paid.currency : "", u.paid ? u.paid.coupon || "" : "", u.paid ? u.paid.created_at : ""]);
+    });
+    var text = rows.map(function (r) { return r.map(function (v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }).join(","); }).join("\n");
+    var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" }));
+    a.download = "theorytestkit-users-" + new Date().toISOString().slice(0, 10) + ".csv"; a.click();
+  }
+
+  function render() {
+    var open = D.enquiries.filter(function (e) { return e.status !== "done"; }).length;
+    var T = [["buyers", "Buyers"], ["enq", "Enquiries" + (open ? '<span class="n">' + open + '</span>' : '')], ["users", "All users"], ["coupons", "Coupons"]];
+    app.innerHTML = stats() +
+      '<div class="tabs">' + T.map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + t[1] + '</button>'; }).join("") + '</div>' +
+      (tab !== "coupons" ? '<div class="tools"><input id="q" placeholder="Search name, email, phone…" value="' + h(q) + '"><button class="btn ghost" id="csv">CSV ↓</button></div>' : '') +
+      '<div class="list" id="list">' + (tab === "buyers" ? buyers() : tab === "enq" ? enquiries() : tab === "users" ? users() : coupons()) + '</div>';
+    app.querySelectorAll("[data-t]").forEach(function (b) { b.onclick = function () { tab = b.dataset.t; render(); }; });
+    var qi = document.getElementById("q");
+    if (qi) qi.oninput = function () { q = qi.value.trim().toLowerCase(); document.getElementById("list").innerHTML = tab === "buyers" ? buyers() : tab === "enq" ? enquiries() : users(); bind(); };
+    var cb = document.getElementById("csv"); if (cb) cb.onclick = csv;
+    var ca = document.getElementById("cadd");
+    if (ca) ca.onclick = async function () {
+      var code = document.getElementById("cc").value, pr = Math.round(parseFloat(document.getElementById("cp").value) * 100);
+      var r = await sb.functions.invoke("admin-data", { body: { action: "coupon_save", code: code, amount_minor: pr, active: true } });
+      if (r.error) alert("Check the code (letters/numbers) and price (£1 to £1000)."); else load();
+    };
+    bind();
+  }
+  function bind() {
+    app.querySelectorAll("[data-eq]").forEach(function (b) {
+      b.onclick = async function () { b.disabled = true; await sb.functions.invoke("admin-data", { body: { action: "enquiry_status", id: Number(b.dataset.eq), status: b.dataset.st } }); load(); };
+    });
+    app.querySelectorAll("[data-cp]").forEach(function (b) {
+      b.onclick = async function () { b.disabled = true; await sb.functions.invoke("admin-data", { body: { action: "coupon_save", code: b.dataset.cp, amount_minor: Number(b.dataset.am), active: b.dataset.ac === "1" } }); load(); };
+    });
+  }
+  async function logout() { await sb.auth.signOut(); location.reload(); }
+  document.getElementById("out").onclick = logout;
+  document.getElementById("reload").onclick = load;
+
+  sb.auth.getSession().then(function (r) { if (r.data.session) load(); else signInBox(); });
+})();
+</script>
+</body>
+</html>
